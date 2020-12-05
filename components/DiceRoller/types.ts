@@ -1,11 +1,24 @@
+import { number } from 'prop-types';
+
 type DieConfig = {
   die: number;
   numberOfDices: number;
 };
 
+export type RollerConfig = {
+  showConfig: boolean;
+  groups: GroupConfig[];
+};
+
+type ModifierConfig = {
+  amount: number;
+};
+
 export type GroupConfig = {
+  name: string;
   hasSum: number;
   dices: DieConfig[];
+  modifiers?: ModifierConfig[];
 };
 
 type DieRoll = {
@@ -14,7 +27,7 @@ type DieRoll = {
 };
 
 export type GroupRoll = {
-  hasSum: boolean;
   sum: number;
   rolls: DieRoll[];
+  config: GroupConfig;
 };

@@ -1,39 +1,32 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import DiceConfig from './components/DiceConfig';
-import { Button } from 'antd';
-import { GroupConfig, GroupRoll } from './types';
+import { Button, Col, message, Row } from 'antd';
+import { GroupConfig, GroupRoll, RollerConfig } from './types';
 import { useRouter } from 'next/router';
 import DiceRolls from './components/DiceRolls';
 import { getRandomIntInclusive } from './utils';
-
-const baseUrl = '/';
+import { RollButton } from './components/styles';
 
 type Props = {
-  diceConfig: GroupConfig[];
+  rollerConfig: RollerConfig;
 };
 
-const DiceRoller = ({ diceConfig }: Props) => {
+const DiceRoller = ({ rollerConfig }: Props) => {
   const router = useRouter();
-  const [dice, setDice] = useState<GroupConfig[]>(diceConfig);
+  const [config, setConfig] = useState<RollerConfig>(rollerConfig);
   const [rolls, setRolls] = useState<GroupRoll[]>();
 
-  useEffect(() => {
-    if (dice?.length) {
-      console.log('setting url params');
-      router.replace({
-        query: {
-          dice: JSON.stringify(dice),
-        },
-      });
-    }
-  }, [dice]);
-
   const rollDice = useCallback(() => {
+    if (!config.groups?.length) {
+      message.error('Please set up some dice');
+      return;
+    }
+
     setRolls(
-      dice.map((group) => {
+      config.groups.map((groupConfig) => {
         let sum = 0;
         const rolls = [];
-        group.dices.forEach(({ die, numberOfDices }) => {
+        groupConfig.dices.forEach(({ die, numberOfDices }) => {
           for (let i = 1; i <= numberOfDices; i += 1) {
             const roll = getRandomIntInclusive(1, die);
             sum += roll;
@@ -41,24 +34,46 @@ const DiceRoller = ({ diceConfig }: Props) => {
           }
         });
 
+        groupConfig.modifiers?.forEach(({ amount }) => {
+          sum += amount;
+        });
+
         return {
-          hasSum: !!group.hasSum,
+          config: groupConfig,
           sum,
           rolls,
         };
       }),
     );
-  }, [dice]);
+  }, [config]);
 
-  console.log('rendering', dice);
+  useEffect(() => {
+    if (config.groups?.length) {
+      rollDice();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (config.groups?.length) {
+      router.replace({
+        query: {
+          config: JSON.stringify(config),
+        },
+      });
+    }
+  }, [config]);
 
   return (
-    <div>
-      {rolls ? <DiceRolls groupRolls={rolls} /> : null}
-      <Button type="primary" onClick={rollDice}>
-        Roll
-      </Button>
-      <DiceConfig setDice={setDice} defaultDice={dice} />
+    <div style={{ marginTop: 10 }}>
+      <DiceRolls groupRolls={rolls} />
+      <Row style={{ marginTop: 15 }} gutter={[16, 40]} justify="center">
+        <Col>
+          <RollButton type="primary" onClick={rollDice}>
+            Roll
+          </RollButton>
+        </Col>
+      </Row>
+      <DiceConfig setRollerConfig={setConfig} initialConfig={config} />
     </div>
   );
 };

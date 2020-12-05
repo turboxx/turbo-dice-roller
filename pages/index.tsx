@@ -1,38 +1,61 @@
 import Head from 'next/head';
-import { Col, Row, Layout } from 'antd';
+import { Row, Layout, message } from 'antd';
 import DiceRoller from '../components/DiceRoller';
 import { useRouter } from 'next/router';
-import { GroupConfig } from '../components/DiceRoller/types';
+import { RollerConfig } from '../components/DiceRoller/types';
 import { useEffect, useState } from 'react';
+
+const defaultConfig: RollerConfig = {
+  showConfig: true,
+  groups: [
+    {
+      hasSum: 0,
+      name: '',
+      dices: [
+        {
+          die: 20,
+          numberOfDices: 1,
+        },
+      ],
+    },
+  ],
+};
 
 export default function Home() {
   const router = useRouter();
-  const diceParam = router.asPath.replace('/?dice=', '');
+  const configParam = router.asPath.replace('/', '').replace('?config=', '');
   const [initiated, setInitiated] = useState(false);
-  const [diceConfig, setDiceConfig] = useState<GroupConfig[]>([]);
+  const [rollerConfig, setRollerConfig] = useState<RollerConfig>(defaultConfig);
 
   useEffect(() => {
-    if (diceParam) {
+    if (configParam) {
       try {
-        const decoded = decodeURIComponent(diceParam);
-        setDiceConfig(JSON.parse(decoded));
+        const decoded = decodeURIComponent(configParam);
+        setRollerConfig(JSON.parse(decoded.replace(/\+/g, ' ')));
       } catch (e) {
-        console.log(e);
+        message.error('Failed to load config from url 😢');
+        console.error(e);
+        setRollerConfig(defaultConfig);
       }
     }
     setInitiated(true);
   }, []);
 
-  // @ts-ignore
   return (
     <Layout>
       <Head>
         <title>Dices</title>
+        <meta
+          name="viewport"
+          content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
       </Head>
-      <Row justify="center" align="middle" style={{ minHeight: '100vh' }}>
-        {initiated ? <DiceRoller diceConfig={diceConfig} /> : null}
-      </Row>
-      <section></section>
+      <section>
+        <Row justify="center" align="middle" style={{ minHeight: '100vh' }}>
+          {initiated ? <DiceRoller rollerConfig={rollerConfig} /> : null}
+        </Row>
+      </section>
     </Layout>
   );
 }
