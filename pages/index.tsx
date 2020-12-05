@@ -29,7 +29,7 @@ export default function Home() {
       <Head>
         <title>Dices</title>
       </Head>
-      <Row type="flex" justify="center" align="middle" style={{ minHeight: '100vh' }}>
+      <Row justify="center" align="middle" style={{ minHeight: '100vh' }}>
         {initiated ? <DiceRoller diceConfig={diceConfig} /> : null}
       </Row>
       <section></section>
