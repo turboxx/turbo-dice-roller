@@ -59,7 +59,7 @@ const DiceRolls = ({ groupRolls }: Props) => {
                       return (
                         <Col>
                           <Typography.Text style={{ fontSize: 26 }}>
-                            {amount > 1 ? '+' : ''}
+                            {amount > 0 ? '+' : ''}
                             {amount}
                           </Typography.Text>
                         </Col>

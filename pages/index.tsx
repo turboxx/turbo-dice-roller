@@ -5,6 +5,8 @@ import { useRouter } from 'next/router';
 import { RollerConfig } from '../components/DiceRoller/types';
 import { useEffect, useState } from 'react';
 
+const title = 'Turbo Dice Roller';
+
 const defaultConfig: RollerConfig = {
   showConfig: true,
   groups: [
@@ -44,12 +46,13 @@ export default function Home() {
   return (
     <Layout>
       <Head>
-        <title>Dices</title>
+        <title>{title}</title>
         <meta
           name="viewport"
           content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"
         />
         <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content={title} />
       </Head>
       <section>
         <Row justify="center" align="middle" style={{ minHeight: '100vh' }}>

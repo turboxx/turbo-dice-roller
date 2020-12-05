@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import DiceConfig from './components/DiceConfig';
-import { Button, Col, message, Row } from 'antd';
-import { GroupConfig, GroupRoll, RollerConfig } from './types';
+import { Col, message, Row } from 'antd';
+import { GroupRoll, RollerConfig } from './types';
 import { useRouter } from 'next/router';
 import DiceRolls from './components/DiceRolls';
 import { getRandomIntInclusive } from './utils';
