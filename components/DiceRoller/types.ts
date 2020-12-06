@@ -1,6 +1,6 @@
 import { number } from 'prop-types';
 
-type DieConfig = {
+export type DieConfig = {
   die: number;
   numberOfDices: number;
 };
@@ -10,7 +10,7 @@ export type RollerConfig = {
   groups: GroupConfig[];
 };
 
-type ModifierConfig = {
+export type ModifierConfig = {
   amount: number;
 };
 

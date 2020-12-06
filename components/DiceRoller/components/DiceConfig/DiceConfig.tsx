@@ -1,15 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
+import { DeleteOutlined } from '@ant-design/icons';
 import { Button, Card, Col, InputNumber, Row, Select, Switch, Typography } from 'antd';
 import { RollerConfig } from '../../types';
-import { DeleteOutlined } from '@ant-design/icons';
-
-const optionsMapper = (value: number | string) => ({
-  value,
-  label: value,
-});
+import { useRollerConfig } from './useRollerConfig';
+import { optionsMapper } from './utils';
 
 const dieOptions = [4, 6, 8, 10, 12, 20].map(optionsMapper);
-
 const numberOfDicesOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(optionsMapper);
 
 type Props = {
@@ -18,145 +14,21 @@ type Props = {
 };
 
 const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
-  const [config, setConfig] = useState<RollerConfig>({ ...initialConfig });
-
-  const addGroup = useCallback(() => {
-    setConfig((existing) => ({
-      ...existing,
-      groups: [
-        ...existing.groups,
-        { name: `Group ${existing.groups.length + 1}`, hasSum: true, dices: [] },
-      ],
-    }));
-  }, [config]);
-
-  const addDie = useCallback(
-    (groupIndex: number) => {
-      setConfig((existing) => {
-        const copy = { ...existing };
-        copy.groups[groupIndex].dices = [
-          ...copy.groups[groupIndex].dices,
-          { die: 6, numberOfDices: 1 },
-        ];
-        return copy;
-      });
-    },
-    [config],
-  );
-
-  const removeGroup = useCallback(
-    (groupIndex: number) => {
-      setConfig((existing) => {
-        const copy = { ...existing };
-        copy.groups.splice(groupIndex, 1);
-        return copy;
-      });
-    },
-    [config],
-  );
-
-  const removeDie = useCallback(
-    (groupIndex: number, dieIndex: number) => {
-      setConfig((existing) => {
-        const copy = { ...existing };
-        copy.groups[groupIndex].dices.splice(dieIndex, 1);
-        return copy;
-      });
-    },
-    [config],
-  );
-
-  const changeDie = useCallback(
-    (groupIndex: number, dieIndex: number, die: number) => {
-      setConfig((existing) => {
-        const copy = { ...existing };
-        const dieConfig = copy.groups[groupIndex].dices[dieIndex];
-        copy.groups[groupIndex].dices.splice(dieIndex, 1, { ...dieConfig, die });
-        return copy;
-      });
-    },
-    [config],
-  );
-
-  const changeNumberOfDices = useCallback(
-    (groupIndex: number, dieIndex: number, numberOfDices: number) => {
-      setConfig((existing) => {
-        const copy = { ...existing };
-        const dieConfig = copy.groups[groupIndex].dices[dieIndex];
-        copy.groups[groupIndex].dices.splice(dieIndex, 1, { ...dieConfig, numberOfDices });
-        return copy;
-      });
-    },
-    [config],
-  );
-
-  const addModifier = useCallback(
-    (groupIndex: number) => {
-      setConfig((existing) => {
-        const copy = { ...existing };
-        copy.groups[groupIndex].modifiers = [
-          ...(copy.groups[groupIndex].modifiers || []),
-          { amount: 1 },
-        ];
-        return copy;
-      });
-    },
-    [config],
-  );
-
-  const removeModifier = useCallback(
-    (groupIndex: number, modifierIndex: number) => {
-      setConfig((existing) => {
-        const copy = { ...existing };
-        copy.groups[groupIndex].modifiers.splice(modifierIndex, 1);
-        return copy;
-      });
-    },
-    [config],
-  );
-
-  const changeModifier = useCallback(
-    (groupIndex: number, modifierIndex: number, amount: number) => {
-      setConfig((existing) => {
-        const copy = { ...existing };
-        const modifierConfig = copy.groups[groupIndex].modifiers[modifierIndex];
-        copy.groups[groupIndex].modifiers.splice(modifierIndex, 1, { ...modifierConfig, amount });
-        return copy;
-      });
-    },
-    [config],
-  );
-
-  const changeHasSum = useCallback(
-    (groupIndex: number, hasSum: boolean) => {
-      setConfig((existing) => {
-        const copy = { ...existing };
-        copy.groups[groupIndex].hasSum = hasSum;
-        copy.groups[groupIndex].modifiers = [];
-        return copy;
-      });
-    },
-    [config],
-  );
-
-  const renameGroup = useCallback(
-    (groupIndex: number, name: string) => {
-      setConfig((existing) => {
-        const copy = { ...existing };
-        copy.groups[groupIndex].name = name;
-        return copy;
-      });
-    },
-    [config],
-  );
-
-  const toggleVisible = useCallback(() => {
-    setConfig((existing) => {
-      const copy = { ...existing };
-      copy.showConfig = !config.showConfig;
-      return copy;
-    });
-  }, [config]);
+  const {
+    config,
+    addGroupCallback,
+    removeGroupCallback,
+    renameGroupCallback,
+    changeHasSumCallback,
+    addDieCallback,
+    removeDiceCallback,
+    changeDieCallback,
+    changeNumberOfDicesCallback,
+    addModifierCallback,
+    removeModifierCallback,
+    changeModifierCallback,
+    toggleVisible,
+  } = useRollerConfig({ setRollerConfig, initialConfig });
 
   useEffect(() => {
     setRollerConfig(config);
@@ -180,13 +52,13 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
                 title={
                   <Typography.Title
                     level={4}
-                    editable={{ onChange: (value) => renameGroup(groupIndex, value) }}
+                    editable={{ onChange: (value) => renameGroupCallback(groupIndex, value) }}
                   >
                     {group.name}
                   </Typography.Title>
                 }
                 extra={
-                  <Button danger onClick={() => removeGroup(groupIndex)}>
+                  <Button danger onClick={() => removeGroupCallback(groupIndex)}>
                     <DeleteOutlined />
                   </Button>
                 }
@@ -196,7 +68,7 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
                   <Col>
                     <Switch
                       checked={group.hasSum}
-                      onChange={(value) => changeHasSum(groupIndex, value)}
+                      onChange={(value) => changeHasSumCallback(groupIndex, value)}
                     />
                   </Col>
                 </Row>
@@ -213,7 +85,9 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
                         <Select
                           value={die.numberOfDices}
                           options={numberOfDicesOptions}
-                          onChange={(value) => changeNumberOfDices(groupIndex, dieIndex, value)}
+                          onChange={(value) =>
+                            changeNumberOfDicesCallback(groupIndex, dieIndex, value)
+                          }
                         />
                       </Col>
                       <Col>Dice</Col>
@@ -221,12 +95,12 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
                         <Select
                           value={die.die}
                           options={dieOptions}
-                          onChange={(value) => changeDie(groupIndex, dieIndex, value)}
+                          onChange={(value) => changeDieCallback(groupIndex, dieIndex, value)}
                         />
                       </Col>
                       <Col>Sided</Col>
                       <Col>
-                        <Button danger onClick={() => removeDie(groupIndex, dieIndex)}>
+                        <Button danger onClick={() => removeDiceCallback(groupIndex, dieIndex)}>
                           <DeleteOutlined />
                         </Button>
                       </Col>
@@ -247,11 +121,16 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
                         <InputNumber
                           type="tel"
                           value={modifier.amount}
-                          onChange={(value) => changeModifier(groupIndex, modifierIndex, +value)}
+                          onChange={(value) =>
+                            changeModifierCallback(groupIndex, modifierIndex, +value)
+                          }
                         />
                       </Col>
                       <Col>
-                        <Button danger onClick={() => removeModifier(groupIndex, modifierIndex)}>
+                        <Button
+                          danger
+                          onClick={() => removeModifierCallback(groupIndex, modifierIndex)}
+                        >
                           <DeleteOutlined />
                         </Button>
                       </Col>
@@ -261,12 +140,14 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
 
                 <Row gutter={20}>
                   <Col>
-                    <Button onClick={() => addDie(groupIndex)}>Add Dice</Button>
+                    <Button onClick={() => addDieCallback(groupIndex)}>Add Dice</Button>
                   </Col>
 
                   {group.hasSum ? (
                     <Col>
-                      <Button onClick={() => addModifier(groupIndex)}>Add a Modifier</Button>
+                      <Button onClick={() => addModifierCallback(groupIndex)}>
+                        Add a Modifier
+                      </Button>
                     </Col>
                   ) : null}
                 </Row>
@@ -274,7 +155,7 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
             );
           })}
           <Row justify="center" style={{ marginTop: 10, marginBottom: 20 }}>
-            <Button onClick={addGroup}>Add a Group</Button>
+            <Button onClick={addGroupCallback}>Add a Group</Button>
           </Row>
         </div>
       ) : null}
