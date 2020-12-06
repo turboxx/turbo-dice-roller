@@ -64,7 +64,7 @@ const DiceRoller = ({ rollerConfig }: Props) => {
   }, [config]);
 
   return (
-    <div style={{ marginTop: 10 }}>
+    <div style={{ marginTop: 20 }}>
       <DiceRolls groupRolls={rolls} />
       <Row style={{ marginTop: 15 }} gutter={[16, 40]} justify="center">
         <Col>
