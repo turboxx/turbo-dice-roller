@@ -11,7 +11,7 @@ const defaultConfig: RollerConfig = {
   showConfig: true,
   groups: [
     {
-      hasSum: 0,
+      hasSum: false,
       name: '',
       dices: [
         {

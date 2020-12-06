@@ -16,7 +16,7 @@ type ModifierConfig = {
 
 export type GroupConfig = {
   name: string;
-  hasSum: number;
+  hasSum: boolean;
   dices: DieConfig[];
   modifiers?: ModifierConfig[];
 };

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Button, Card, Col, InputNumber, Row, Select, Typography } from 'antd';
+import { Button, Card, Col, InputNumber, Row, Select, Switch, Typography } from 'antd';
 import { RollerConfig } from '../../types';
 import { DeleteOutlined } from '@ant-design/icons';
 
@@ -11,14 +11,6 @@ const optionsMapper = (value: number | string) => ({
 const dieOptions = [4, 6, 8, 10, 12, 20].map(optionsMapper);
 
 const numberOfDicesOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(optionsMapper);
-
-const sumOptions = [
-  {
-    label: 'Yes',
-    value: 1,
-  },
-  { label: 'No', value: 0 },
-];
 
 type Props = {
   setRollerConfig: (config: RollerConfig) => void;
@@ -33,7 +25,7 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
       ...existing,
       groups: [
         ...existing.groups,
-        { name: `Group ${existing.groups.length + 1}`, hasSum: 1, dices: [] },
+        { name: `Group ${existing.groups.length + 1}`, hasSum: true, dices: [] },
       ],
     }));
   }, [config]);
@@ -136,7 +128,7 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
   );
 
   const changeHasSum = useCallback(
-    (groupIndex: number, hasSum: number) => {
+    (groupIndex: number, hasSum: boolean) => {
       setConfig((existing) => {
         const copy = { ...existing };
         copy.groups[groupIndex].hasSum = hasSum;
@@ -175,7 +167,7 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
       <Row align="middle" justify="center" gutter={[20, 20]}>
         <Col>
           <Button type="dashed" onClick={toggleVisible}>
-            {config.showConfig ? 'Hide' : 'Show'} Dice config
+            {config.showConfig ? 'Hide' : 'Show'} Config
           </Button>
         </Col>
       </Row>
@@ -202,9 +194,8 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
                 <Row gutter={[12, 16]} align="middle" justify="space-between">
                   <Col>Sum results</Col>
                   <Col>
-                    <Select
-                      value={group.hasSum}
-                      options={sumOptions}
+                    <Switch
+                      checked={group.hasSum}
                       onChange={(value) => changeHasSum(groupIndex, value)}
                     />
                   </Col>
@@ -270,7 +261,7 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
 
                 <Row gutter={20}>
                   <Col>
-                    <Button onClick={() => addDie(groupIndex)}>Add a Die</Button>
+                    <Button onClick={() => addDie(groupIndex)}>Add Dice</Button>
                   </Col>
 
                   {group.hasSum ? (
