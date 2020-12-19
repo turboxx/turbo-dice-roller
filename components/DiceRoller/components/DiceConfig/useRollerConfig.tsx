@@ -1,28 +1,41 @@
 import { RollerConfig } from '../../types';
-import { useCallback, useState } from 'react';
-import {
-  addDice,
-  addGroup,
-  addModifier,
-  copyConfig,
-  removeDice,
-  removeGroup,
-  removeModifier,
-  updateDice,
-  updateGroup,
-  updateModifier,
-} from './utils';
+import { useCallback, useEffect } from 'react';
+import * as utils from './utils';
+import { useStateWithLocalStorage } from '../../../../lib/hooks/useStateWithLocalStorage';
+import { copyToClipboard, getUrlForConfig } from '../../storage';
+import { message } from 'antd';
 
 type Props = {
-  setRollerConfig: (config: RollerConfig) => void;
   initialConfig?: RollerConfig;
+  defaultConfig?: RollerConfig;
 };
-export const useRollerConfig = ({ setRollerConfig, initialConfig }: Props) => {
-  const [config, setConfig] = useState<RollerConfig>({ ...initialConfig });
 
-  const addGroupCallback = useCallback(() => {
+const emptyConfig: RollerConfig = { showConfig: true, groups: [] };
+
+const getValidInitialValue = (
+  initialConfig?: RollerConfig,
+  defaultConfig?: RollerConfig,
+): RollerConfig => {
+  if (initialConfig) return { ...initialConfig };
+  if (defaultConfig) return { ...defaultConfig };
+  return { ...emptyConfig };
+};
+
+export const useRollerConfig = ({ initialConfig, defaultConfig }: Props) => {
+  const [config, setConfig, clearConfig] = useStateWithLocalStorage<RollerConfig>(
+    'roller-config',
+    getValidInitialValue(initialConfig, defaultConfig),
+  );
+
+  useEffect(() => {
+    if (initialConfig) {
+      setConfig(initialConfig);
+    }
+  }, []);
+
+  const addGroup = useCallback(() => {
     setConfig((existing) =>
-      addGroup(existing, {
+      utils.addGroup(existing, {
         name: `Group ${existing.groups.length + 1}`,
         hasSum: true,
         dices: [],
@@ -31,98 +44,109 @@ export const useRollerConfig = ({ setRollerConfig, initialConfig }: Props) => {
     );
   }, [config]);
 
-  const addDieCallback = useCallback(
+  const addDie = useCallback(
     (groupIndex: number) => {
-      setConfig((existing) => addDice(existing, groupIndex, { die: 6, numberOfDices: 1 }));
+      setConfig((existing) => utils.addDice(existing, groupIndex, { die: 6, numberOfDices: 1 }));
     },
     [config],
   );
 
-  const removeGroupCallback = useCallback(
+  const removeGroup = useCallback(
     (groupIndex: number) => {
-      setConfig((existing) => removeGroup(existing, groupIndex));
+      setConfig((existing) => utils.removeGroup(existing, groupIndex));
     },
     [config],
   );
 
-  const removeDiceCallback = useCallback(
+  const removeDice = useCallback(
     (groupIndex: number, diceIndex: number) => {
-      setConfig((existing) => removeDice(existing, groupIndex, diceIndex));
+      setConfig((existing) => utils.removeDice(existing, groupIndex, diceIndex));
     },
     [config],
   );
 
-  const changeDieCallback = useCallback(
+  const changeDie = useCallback(
     (groupIndex: number, diceIndex: number, die: number) => {
-      setConfig((existing) => updateDice(existing, groupIndex, diceIndex, { die }));
+      setConfig((existing) => utils.updateDice(existing, groupIndex, diceIndex, { die }));
     },
     [config],
   );
 
-  const changeNumberOfDicesCallback = useCallback(
+  const changeNumberOfDices = useCallback(
     (groupIndex: number, diceIndex: number, numberOfDices: number) => {
-      setConfig((existing) => updateDice(existing, groupIndex, diceIndex, { numberOfDices }));
+      setConfig((existing) => utils.updateDice(existing, groupIndex, diceIndex, { numberOfDices }));
     },
     [config],
   );
 
-  const addModifierCallback = useCallback(
+  const addModifier = useCallback(
     (groupIndex: number) => {
-      setConfig((existing) => addModifier(existing, groupIndex, { amount: 1 }));
+      setConfig((existing) => utils.addModifier(existing, groupIndex, { amount: 1 }));
     },
     [config],
   );
 
-  const removeModifierCallback = useCallback(
+  const removeModifier = useCallback(
     (groupIndex: number, modifierIndex: number) => {
-      setConfig((existing) => removeModifier(existing, groupIndex, modifierIndex));
+      setConfig((existing) => utils.removeModifier(existing, groupIndex, modifierIndex));
     },
     [config],
   );
 
-  const changeModifierCallback = useCallback(
+  const changeModifier = useCallback(
     (groupIndex: number, modifierIndex: number, amount: number) => {
-      setConfig((existing) => updateModifier(existing, groupIndex, modifierIndex, { amount }));
+      setConfig((existing) =>
+        utils.updateModifier(existing, groupIndex, modifierIndex, { amount }),
+      );
     },
     [config],
   );
 
-  const changeHasSumCallback = useCallback(
+  const changeHasSum = useCallback(
     (groupIndex: number, hasSum: boolean) => {
-      setConfig((existing) => updateGroup(existing, groupIndex, { hasSum, modifiers: [] }));
+      setConfig((existing) => utils.updateGroup(existing, groupIndex, { hasSum, modifiers: [] }));
     },
     [config],
   );
 
-  const renameGroupCallback = useCallback(
+  const renameGroup = useCallback(
     (groupIndex: number, name: string) => {
-      setConfig((existing) => updateGroup(existing, groupIndex, { name }));
+      setConfig((existing) => utils.updateGroup(existing, groupIndex, { name }));
     },
     [config],
   );
 
   const toggleVisible = useCallback(() => {
     setConfig((existing) => {
-      const copy = copyConfig(existing);
+      const copy = utils.copyConfig(existing);
       copy.showConfig = !copy.showConfig;
       return copy;
     });
   }, [config]);
 
+  const copyConfig = useCallback(() => {
+    copyToClipboard(getUrlForConfig(config));
+    message.success('Copied to clipboard ✅');
+  }, [config]);
+
   return {
     config,
     setConfig,
-    addGroupCallback,
-    removeGroupCallback,
-    renameGroupCallback,
-    changeHasSumCallback,
-    addDieCallback,
-    removeDiceCallback,
-    changeDieCallback,
-    changeNumberOfDicesCallback,
-    addModifierCallback,
-    removeModifierCallback,
-    changeModifierCallback,
-    toggleVisible,
+    callbacks: {
+      addGroup,
+      removeGroup,
+      renameGroup,
+      changeHasSum,
+      addDie,
+      removeDice,
+      changeDie,
+      changeNumberOfDices,
+      addModifier,
+      removeModifier,
+      changeModifier,
+      toggleVisible,
+      clearConfig,
+      copyConfig,
+    },
   };
 };

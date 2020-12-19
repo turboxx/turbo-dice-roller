@@ -11,24 +11,18 @@ const numberOfDicesOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(optionsMapper);
 type Props = {
   setRollerConfig: (config: RollerConfig) => void;
   initialConfig?: RollerConfig;
+  defaultConfig?: RollerConfig;
 };
 
-const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
-  const {
-    config,
-    addGroupCallback,
-    removeGroupCallback,
-    renameGroupCallback,
-    changeHasSumCallback,
-    addDieCallback,
-    removeDiceCallback,
-    changeDieCallback,
-    changeNumberOfDicesCallback,
-    addModifierCallback,
-    removeModifierCallback,
-    changeModifierCallback,
-    toggleVisible,
-  } = useRollerConfig({ setRollerConfig, initialConfig });
+const DiceConfig = ({ setRollerConfig, initialConfig, defaultConfig }: Props) => {
+  const { config, setConfig, callbacks } = useRollerConfig({ initialConfig, defaultConfig });
+
+  useEffect(() => {
+    if (!config && defaultConfig) {
+      console.log('setting default config');
+      setConfig(defaultConfig);
+    }
+  }, []);
 
   useEffect(() => {
     setRollerConfig(config);
@@ -38,7 +32,7 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
     <div style={{ minWidth: 400, minHeight: 400 }}>
       <Row align="middle" justify="center" gutter={[20, 20]}>
         <Col>
-          <Button type="dashed" onClick={toggleVisible}>
+          <Button type="dashed" onClick={callbacks.toggleVisible}>
             {config.showConfig ? 'Hide' : 'Show'} Config
           </Button>
         </Col>
@@ -52,13 +46,13 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
                 title={
                   <Typography.Title
                     level={4}
-                    editable={{ onChange: (value) => renameGroupCallback(groupIndex, value) }}
+                    editable={{ onChange: (value) => callbacks.renameGroup(groupIndex, value) }}
                   >
                     {group.name}
                   </Typography.Title>
                 }
                 extra={
-                  <Button danger onClick={() => removeGroupCallback(groupIndex)}>
+                  <Button danger onClick={() => callbacks.removeGroup(groupIndex)}>
                     <DeleteOutlined />
                   </Button>
                 }
@@ -68,7 +62,7 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
                   <Col>
                     <Switch
                       checked={group.hasSum}
-                      onChange={(value) => changeHasSumCallback(groupIndex, value)}
+                      onChange={(value) => callbacks.changeHasSum(groupIndex, value)}
                     />
                   </Col>
                 </Row>
@@ -86,7 +80,7 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
                           value={die.numberOfDices}
                           options={numberOfDicesOptions}
                           onChange={(value) =>
-                            changeNumberOfDicesCallback(groupIndex, dieIndex, value)
+                            callbacks.changeNumberOfDices(groupIndex, dieIndex, value)
                           }
                         />
                       </Col>
@@ -95,12 +89,12 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
                         <Select
                           value={die.die}
                           options={dieOptions}
-                          onChange={(value) => changeDieCallback(groupIndex, dieIndex, value)}
+                          onChange={(value) => callbacks.changeDie(groupIndex, dieIndex, value)}
                         />
                       </Col>
                       <Col>Sided</Col>
                       <Col>
-                        <Button danger onClick={() => removeDiceCallback(groupIndex, dieIndex)}>
+                        <Button danger onClick={() => callbacks.removeDice(groupIndex, dieIndex)}>
                           <DeleteOutlined />
                         </Button>
                       </Col>
@@ -122,14 +116,14 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
                           type="tel"
                           value={modifier.amount}
                           onChange={(value) =>
-                            changeModifierCallback(groupIndex, modifierIndex, +value)
+                            callbacks.changeModifier(groupIndex, modifierIndex, +value)
                           }
                         />
                       </Col>
                       <Col>
                         <Button
                           danger
-                          onClick={() => removeModifierCallback(groupIndex, modifierIndex)}
+                          onClick={() => callbacks.removeModifier(groupIndex, modifierIndex)}
                         >
                           <DeleteOutlined />
                         </Button>
@@ -140,12 +134,12 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
 
                 <Row gutter={20}>
                   <Col>
-                    <Button onClick={() => addDieCallback(groupIndex)}>Add Dice</Button>
+                    <Button onClick={() => callbacks.addDie(groupIndex)}>Add Dice</Button>
                   </Col>
 
                   {group.hasSum ? (
                     <Col>
-                      <Button onClick={() => addModifierCallback(groupIndex)}>
+                      <Button onClick={() => callbacks.addModifier(groupIndex)}>
                         Add a Modifier
                       </Button>
                     </Col>
@@ -155,7 +149,10 @@ const DiceConfig = ({ setRollerConfig, initialConfig }: Props) => {
             );
           })}
           <Row justify="center" style={{ marginTop: 10, marginBottom: 20 }}>
-            <Button onClick={addGroupCallback}>Add a Group</Button>
+            <Button onClick={callbacks.addGroup}>Add a Group</Button>
+          </Row>
+          <Row justify="center" style={{ marginTop: 10, marginBottom: 20 }}>
+            <Button onClick={callbacks.copyConfig}>Copy Config</Button>
           </Row>
         </div>
       ) : null}

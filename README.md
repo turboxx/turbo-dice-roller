@@ -1,1 +1,8 @@
-This is a starter template for [Learn Next.js](https://nextjs.org/learn).
+# Turbo Dice Roller
+
+For rolling dice
+
+### Config Load Priority
+ 1. URL via query param `config`
+ 2. Local Storage
+ 3. Default Config

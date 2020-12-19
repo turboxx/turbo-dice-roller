@@ -4,6 +4,7 @@ import DiceRoller from '../components/DiceRoller';
 import { useRouter } from 'next/router';
 import { RollerConfig } from '../components/DiceRoller/types';
 import { useEffect, useState } from 'react';
+import { extractUrlParam, sanitizeUrlParam } from '../components/DiceRoller/storage';
 
 const title = 'Turbo Dice Roller';
 
@@ -25,23 +26,20 @@ const defaultConfig: RollerConfig = {
 
 export default function Home() {
   const router = useRouter();
-  const configParam = router.asPath.replace('/', '').replace('?config=', '');
+  const configParam = sanitizeUrlParam(router.asPath);
+
   const [initiated, setInitiated] = useState(false);
-  const [rollerConfig, setRollerConfig] = useState<RollerConfig>(defaultConfig);
+  const [rollerConfig, setRollerConfig] = useState<RollerConfig | null>(null);
 
   useEffect(() => {
     if (configParam) {
-      try {
-        const decoded = decodeURIComponent(configParam);
-        setRollerConfig(JSON.parse(decoded.replace(/\+/g, ' ')));
-      } catch (e) {
-        message.error('Failed to load config from url 😢');
-        console.error(e);
-        setRollerConfig(defaultConfig);
-      }
+      const urlConfig = extractUrlParam(configParam);
+      setRollerConfig(urlConfig);
+      router.replace('/');
     }
     setInitiated(true);
   }, []);
+
 
   return (
     <Layout>
@@ -56,7 +54,9 @@ export default function Home() {
       </Head>
       <section>
         <Row justify="center" align="middle" style={{ minHeight: '100vh' }}>
-          {initiated ? <DiceRoller rollerConfig={rollerConfig} /> : null}
+          {initiated ? (
+            <DiceRoller rollerConfig={rollerConfig} defaultConfig={defaultConfig} />
+          ) : null}
         </Row>
       </section>
     </Layout>
