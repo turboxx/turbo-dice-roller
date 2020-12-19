@@ -31,3 +31,8 @@ export type GroupRoll = {
   rolls: DieRoll[];
   config: GroupConfig;
 };
+
+export type RollRound = {
+  date: Date;
+  groupRolls: GroupRoll[];
+};

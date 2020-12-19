@@ -1,23 +1,26 @@
 import React from 'react';
-import { GroupRoll } from '../../types';
+import TimeAgo from 'timeago-react';
 import { Card, Col, Empty, Row, Typography } from 'antd';
+
+import { RollRound } from '../../types';
+import RollResult from './RollResult';
 
 const gutter: [number, number] = [20, 10];
 
 type Props = {
-  groupRolls: GroupRoll[];
+  rolls?: RollRound;
 };
 
-const DiceRolls = ({ groupRolls }: Props) => {
+const DiceRolls = ({ rolls }: Props) => {
   return (
     <>
       <Row justify="center">
         <Typography.Title level={2}>Rolls</Typography.Title>
       </Row>
-      {!groupRolls?.length ? (
+      {!rolls?.groupRolls?.length ? (
         <Empty />
       ) : (
-        groupRolls.map((group, groupIndex) => {
+        rolls.groupRolls.map((group, groupIndex) => {
           return group.rolls.length ? (
             <Row key={groupIndex} gutter={gutter} justify="space-around">
               <Card
@@ -46,19 +49,11 @@ const DiceRolls = ({ groupRolls }: Props) => {
                 }
               >
                 <Row justify="center" gutter={gutter} align="middle">
-                  {group.rolls.map(({ roll, die }, rollIndex) => {
-                    return (
-                      <Col key={rollIndex}>
-                        <Typography.Text
-                          strong
-                          style={{ fontSize: !group.config.hasSum ? 40 : 26 }}
-                        >
-                          {roll}
-                        </Typography.Text>
-                        <Typography.Text> ({die})</Typography.Text>
-                      </Col>
-                    );
-                  })}
+                  {group.rolls.map(({ roll, die }, rollIndex) => (
+                    <Col key={rollIndex}>
+                      <RollResult roll={roll} die={die} groupConfig={group.config} />
+                    </Col>
+                  ))}
                   {group.config.hasSum
                     ? group.config.modifiers?.map(({ amount }, modifierIndex) => {
                         return (
@@ -77,6 +72,11 @@ const DiceRolls = ({ groupRolls }: Props) => {
           ) : null;
         })
       )}
+      {rolls?.date ? (
+        <Row justify="center">
+          <TimeAgo datetime={rolls.date} />
+        </Row>
+      ) : null}
     </>
   );
 };

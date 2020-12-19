@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import DiceConfig from './components/DiceConfig';
 import { Col, message, Row } from 'antd';
-import { GroupRoll, RollerConfig } from './types';
+import { RollerConfig, RollRound } from './types';
 import DiceRolls from './components/DiceRolls';
 import { rollAllDice } from './utils';
 import { RollButton } from './components/styles';
@@ -13,7 +13,7 @@ type Props = {
 
 const DiceRoller = ({ rollerConfig, defaultConfig }: Props) => {
   const [config, setConfig] = useState(rollerConfig);
-  const [rolls, setRolls] = useState<GroupRoll[]>([]);
+  const [rolls, setRolls] = useState<RollRound[]>([]);
 
   const rollAll = useCallback(() => {
     if (!config?.groups?.length) {
@@ -21,9 +21,7 @@ const DiceRoller = ({ rollerConfig, defaultConfig }: Props) => {
       return;
     }
 
-    const roundRolls = rollAllDice(config);
-
-    setRolls(roundRolls);
+    setRolls((existingRolls) => [...existingRolls, rollAllDice(config)]);
   }, [config]);
 
   useEffect(() => {
@@ -35,7 +33,7 @@ const DiceRoller = ({ rollerConfig, defaultConfig }: Props) => {
 
   return (
     <div style={{ marginTop: 20 }}>
-      <DiceRolls groupRolls={rolls} />
+      <DiceRolls rolls={rolls[rolls.length - 1]} />
       <Row style={{ marginTop: 15 }} gutter={[16, 40]} justify="center">
         <Col>
           <RollButton type="primary" onClick={rollAll}>

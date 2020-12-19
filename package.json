@@ -19,6 +19,7 @@
     "next": "^10.0.0",
     "react": "16.13.1",
     "react-dom": "16.13.1",
+    "timeago-react": "^3.0.1",
     "save": "^2.4.0",
     "styled-components": "^5.2.1"
   },
